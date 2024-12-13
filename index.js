@@ -2,6 +2,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
+require('./models/user');
+require('./models/follow');
+require('./models/question');
+require('./models/category');
+require('./models/answer');
+
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
@@ -10,11 +16,11 @@ app.use(cors());
 const { connectDB } = require('./config/db');
 connectDB();
 
-// Sync models
+// Sync database
 const { sequelize } = require('./config/db');
-sequelize.sync({ force: false }) // Set to 'true' to reset tables during development
-    .then(() => console.log('Database synced'))
-    .catch(err => console.log(err));
+sequelize.sync({ alter: true }) // Syncs models with the database
+    .then(() => console.log('Database synced successfully'))
+    .catch(err => console.error('Error syncing database:', err));
 
 // Import routes
 const designerRoutes = require('./routes/designer');
