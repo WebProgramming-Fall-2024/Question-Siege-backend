@@ -28,6 +28,7 @@ const User = sequelize.define('User', {
     lastOnline: {
         type: DataTypes.DATE,
         allowNull: true,
+        defaultValue: DataTypes.NOW,
     },
     score: {
         type: DataTypes.INTEGER,
