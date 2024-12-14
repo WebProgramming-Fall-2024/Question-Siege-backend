@@ -1,65 +1,50 @@
-// Import necessary modules
-const User = require('../models/user'); // Assuming you have a User model
+const User = require('../models/user');
+const { validationResult } = require('express-validator');
 
-// Controller object
-const userController = {
-    // Signup function
-    async signup(req, res) {
-        try {
-            const { username, password, phone_number } = req.body;
+exports.signup = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
 
-            // Check if the user already exists
-            const existingUser = await User.findOne({ where: { username } });
-            if (existingUser) {
-                return res.status(400).json({ message: 'User already exists' });
-            }
+    const { username, password, phone_number } = req.body;
 
-            // Create a new user
-            const newUser = await User.create({
-                username,
-                password,
-                phone_number,
-            });
-
-            res.status(201).json({ message: 'User created successfully', user: newUser });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: 'Internal server error' });
-        }
-    },
-
-    // Login function
-    async login(req, res) {
-        try {
-            const { username, password } = req.body;
-
-            // Find the user by username
-            const user = await User.findOne({ where: { username } });
-            if (!user) {
-                return res.status(400).json({ message: 'Invalid username or password' });
-            }
-
-            // Check the password
-            if (user.password !== password) {
-                return res.status(400).json({ message: 'Invalid username or password' });
-            }
-
-            res.status(200).json({
-                message: 'Login successful',
-                user: {
-                    id: user.id,
-                    username: user.username,
-                    phone_number: user.phone_number,
-                    signupDate: user.signupDate,
-                    lastOnline: user.lastOnline,
-                    score: user.score,
-                },
-            });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: 'Internal server error' });
-        }
-    },
+    try {
+        const user = await User.create({ username, password, phone_number });
+        res.status(201).json({ message: 'User created successfully', user });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 
-module.exports = userController;
+
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+
+exports.login = async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        const user = await User.findOne({ where: { username } });
+
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid username or password' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Invalid username or password' });
+        }
+
+        // Check if token expiration is set to "never"
+        const tokenOptions = {};
+        if (process.env.JWT_EXPIRES_IN !== 'never') {
+            tokenOptions.expiresIn = process.env.JWT_EXPIRES_IN;
+        }
+
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, tokenOptions);
+        res.status(200).json({ message: 'Login successful', token });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
