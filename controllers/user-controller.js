@@ -206,3 +206,41 @@ exports.getUserDetailsByName = async (req, res) => {
         return res.status(500).json({ error: 'Server error while fetching user details' });
     }
 };
+
+
+// Fetch all users sorted by score with additional data
+exports.getUsersSortedByScore = async (req, res) => {
+    try {
+        // Fetch all users with their scores, number of designed and answered questions
+        const users = await User.findAll({
+            attributes: ['id', 'username', 'score'], // Select required user fields
+            order: [['score', 'DESC']], // Sort users by score in descending order
+        });
+
+        // Map through users and calculate designed and answered question counts
+        const userData = await Promise.all(
+            users.map(async (user) => {
+                const designedQuestionsCount = await Question.count({
+                    where: { creator_id: user.id },
+                });
+
+                const answeredQuestionsCount = await Answer.count({
+                    where: { user_id: user.id },
+                });
+
+                return {
+                    username: user.username,
+                    score: user.score,
+                    designedQuestions: designedQuestionsCount,
+                    answeredQuestions: answeredQuestionsCount,
+                };
+            })
+        );
+
+        // Respond with the sorted user data
+        return res.status(200).json(userData);
+    } catch (err) {
+        console.error('Error fetching sorted users:', err);
+        return res.status(500).json({ error: 'Server error while fetching sorted users' });
+    }
+};
