@@ -3,6 +3,7 @@ const { validationResult } = require('express-validator');
 const Answer = require('../models/answer');
 const Question = require('../models/question');
 const Category = require('../models/category');
+const Follow = require('../models/follow');
 const { Op } = require('sequelize'); // For query conditions
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -242,5 +243,51 @@ exports.getUsersSortedByScore = async (req, res) => {
     } catch (err) {
         console.error('Error fetching sorted users:', err);
         return res.status(500).json({ error: 'Server error while fetching sorted users' });
+    }
+};
+
+
+// Follow another user by username
+exports.followUser = async (req, res) => {
+    try {
+        const followerId = req.user.id; // The ID of the user who is following (from the token)
+        const { username } = req.body; // The username of the user to be followed
+
+        // Ensure username is provided
+        if (!username) {
+            return res.status(400).json({ error: 'Username is required to follow a user' });
+        }
+
+        // Find the target user by username
+        const targetUser = await User.findOne({ where: { username } });
+
+        if (!targetUser) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Prevent users from following themselves
+        if (followerId === targetUser.id) {
+            return res.status(400).json({ error: 'You cannot follow yourself' });
+        }
+
+        // Check if the follow relationship already exists
+        const existingFollow = await Follow.findOne({
+            where: { follower_id: followerId, followee_id: targetUser.id },
+        });
+
+        if (existingFollow) {
+            return res.status(400).json({ error: 'You are already following this user' });
+        }
+
+        // Create the follow relationship
+        await Follow.create({
+            follower_id: followerId,
+            followee_id: targetUser.id,
+        });
+
+        return res.status(201).json({ message: `You are now following ${username}` });
+    } catch (err) {
+        console.error('Error following user:', err);
+        return res.status(500).json({ error: 'Server error while following user' });
     }
 };
