@@ -291,3 +291,28 @@ exports.followUser = async (req, res) => {
         return res.status(500).json({ error: 'Server error while following user' });
     }
 };
+
+exports.getFollowings = async (req, res) => {
+    try {
+        const userId = req.user.id; // Extract logged-in user's ID from the token
+
+        // Find users the logged-in user is following
+        const user = await User.findByPk(userId, {
+            include: {
+                model: User,
+                as: 'UsersFollowed', // Alias from association
+                through: { attributes: [] }, // Exclude join table attributes
+                attributes: ['id', 'username'], // Only return necessary fields
+            },
+        });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        res.status(200).json(user.UsersFollowed); // Return the followings
+    } catch (err) {
+        console.error('Error fetching followings:', err);
+        res.status(500).json({ error: 'Failed to fetch followings.' });
+    }
+};
