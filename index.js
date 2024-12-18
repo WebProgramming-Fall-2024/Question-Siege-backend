@@ -26,10 +26,13 @@ sequelize.sync({ alter: true }) // Syncs models with the database
 const designerRoutes = require('./routes/designer');
 const questionRoutes = require('./routes/question');
 const userRoutes = require('./routes/user');
+const categoryRoutes = require('./routes/category');
+
 
 // Use routes
 app.use('/api/designer', designerRoutes); // Designer routes
 app.use('/api/questions', questionRoutes); // General question routes
+app.use('/api/category', categoryRoutes);
 app.use('/api/users', userRoutes);
 
 // Start server
