@@ -8,6 +8,38 @@
 ### **Overview**
 The backend of **Question_Siege** is built using **Express.js** and **Sequelize ORM**, with a **MySQL relational database** for persistent storage. It serves as the foundation for managing user interactions, game logic, and data persistence. The backend is designed to provide robust API endpoints to support a ReactJS-based frontend.
 
+```plaintext
+├── .env
+├── .gitignore
+├── README.md
+├── config
+│   └── db.js
+├── controllers
+│   ├── category-controller.js
+│   ├── game-controller.js
+│   ├── question-controller.js
+│   └── user-controller.js
+├── index.js
+├── middleware
+│   ├── auth.js
+│   └── validation.js
+├── models
+│   ├── answer.js
+│   ├── category.js
+│   ├── follow.js
+│   ├── game.js
+│   ├── gameCategory.js
+│   ├── question.js
+│   └── user.js
+├── package-lock.json
+├── package.json
+└── routes
+    ├── category.js
+    ├── game.js
+    ├── question.js
+    └── user.js
+```
+
 ---
 
 ### **Flow of the Backend**
