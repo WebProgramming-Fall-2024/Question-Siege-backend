@@ -2,12 +2,21 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 const User = require('./user');
 const Question = require('./question');
+const Game = require('./game');
 
 const Answer = sequelize.define('Answer', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
+    },
+    game_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Game,
+            key: 'id',
+        },
     },
     question_id: {
         type: DataTypes.INTEGER,
@@ -42,7 +51,9 @@ const Answer = sequelize.define('Answer', {
     timestamps: false,
 });
 
-// Define associations
+Game.hasMany(Answer, { foreignKey: 'game_id', as: 'GameAnswers' });
+Answer.belongsTo(Game, { foreignKey: 'game_id', as: 'Game' });
+
 User.hasMany(Answer, { foreignKey: 'user_id', as: 'UserAnswers' });
 Answer.belongsTo(User, { foreignKey: 'user_id', as: 'AnsweringUser' });
 

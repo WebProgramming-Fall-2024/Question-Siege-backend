@@ -7,6 +7,8 @@ require('./models/follow');
 require('./models/question');
 require('./models/category');
 require('./models/answer');
+require('./models/game');
+require('./models/gameCategory');
 
 const app = express();
 app.use(bodyParser.json());
@@ -23,17 +25,17 @@ sequelize.sync({ alter: true }) // Syncs models with the database
     .catch(err => console.error('Error syncing database:', err));
 
 // Import routes
-const designerRoutes = require('./routes/designer');
 const questionRoutes = require('./routes/question');
 const userRoutes = require('./routes/user');
 const categoryRoutes = require('./routes/category');
+const gameRoutes = require('./routes/game');
 
 
 // Use routes
-app.use('/api/designer', designerRoutes); // Designer routes
 app.use('/api/questions', questionRoutes); // General question routes
 app.use('/api/category', categoryRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/game', gameRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;
